@@ -1,18 +1,18 @@
 # Automatically generated directories and files
-output
+/output
 # plugins
-cache
+/cache
 scenario
-scenario/ic.scn
-bluesky/resources/grib
-bluesky/resources/netcdf
+/scenario/ic.scn
+/bluesky/resources/grib
+/bluesky/resources/netcdf
 
 # Potentially locally-copied BADA installation
-bluesky/resources/performance/BADA/*
-!bluesky/resources/performance/BADA/README.md
+/bluesky/resources/performance/BADA/*
+!/bluesky/resources/performance/BADA/README.md
 
 # Sphinx documentation
-docs/_build/
+/docs/_build/
 
 # virtual environment
 venv
