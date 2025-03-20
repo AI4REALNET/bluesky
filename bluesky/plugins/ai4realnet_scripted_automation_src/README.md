@@ -18,8 +18,9 @@ The background for this plugin is bifold:
 
 ## Install
 
+This project requires Python 3.13 or higher.
+
 Instructions to install BlueSky can be found in the [BlueSky Wiki](https://github.com/TUDelft-CNS-ATM/bluesky/wiki/Installation).
-Works with BlueSky versions up to Commit 849d76f
 
 To use this plugin, it is also required to install Larp:
 
