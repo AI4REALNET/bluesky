@@ -8,6 +8,9 @@ scenario/ai4realnet_scripted_automation_scenario/
 /bluesky/resources/grib
 /bluesky/resources/netcdf
 
+# scenarios
+scenario/ic.scn
+
 # Potentially locally-copied BADA installation
 /bluesky/resources/performance/BADA/*
 !/bluesky/resources/performance/BADA/README.md
