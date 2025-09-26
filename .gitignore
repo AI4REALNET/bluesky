@@ -1,9 +1,10 @@
+# scenarios for scripted_automation_plugin are available of request. Stored in project gitlab
+scenario/ai4realnet_scripted_automation_scenario/
+
 # Automatically generated directories and files
 /output
 # plugins
 /cache
-scenario
-/scenario/ic.scn
 /bluesky/resources/grib
 /bluesky/resources/netcdf
 
