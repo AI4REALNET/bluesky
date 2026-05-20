@@ -14,6 +14,8 @@ This plug-in complements the release of environments in BlueSky-Gym, a Gymnasium
 
 The plugins loads sector data and generates synthetic aircraft and restricted areas. The RL model deployment sends observations to the previously trained AI models from the BlueSky-Gym environments, which in turn control the speed and heading of the aircraft. This set-up allows to test RL models on real world scenarios, enabling the measurement of KPIs.
 
+<img width="1720" height="1222" alt="output3" src="https://github.com/user-attachments/assets/827a798b-0604-43e3-90f8-d8cbfa73e7a9" />
+
 ### References
 Groot, D. Janthony and Leto, Giulia and Vlaskin, Aleksandr and Moec, Adam and Ellerbroek, Joost. "BlueSky-Gym: Reinforcement Learning Environment for Air Traffic Applications", 14th SESAR Innovation Days. https://www.sesarju.eu/sites/default/files/documents/sid/2024/papers/SIDs_2024_paper_021%20final.pdf (2024).
 
