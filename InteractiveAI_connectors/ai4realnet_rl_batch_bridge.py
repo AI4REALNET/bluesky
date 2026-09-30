@@ -66,6 +66,7 @@ Then point InteractiveAI's frontend build at this bridge:
 import argparse
 import base64
 import queue
+import sys
 import threading
 import time
 from datetime import datetime, timedelta, timezone
@@ -180,6 +181,9 @@ def sim_loop():
             if bs.sim.dtmult != target_speed:
                 bs.sim.set_dtmult(target_speed)
             bs.sim.update()
+        # update() sleeps while pacing the simulation. Yield outside the lock
+        # so context pushes and HTTP handlers can acquire it between steps.
+        time.sleep(0.001)
 
 # Remove _SUPPRESSED_ECHO_PREFIXES and _capture_net_send after finalising the development. The user does not need to see these messages. 
 _SUPPRESSED_ECHO_PREFIXES = (
@@ -450,8 +454,8 @@ def push_loop():
         time.sleep(5)
     while _sim_running:
         try:
+            push_context()
             with _sim_lock:
-                push_context()
                 current_ids = set(bs.traf.id)
                 shapes = getattr(bs.tools.areafilter, "basic_shapes", {})
                 current_disturbances = {
@@ -609,6 +613,42 @@ def health():
     })
 
 
+def _pareto_agent():
+    module = sys.modules.get("bluesky.plugins.ai4realnet_deploy_RL_batch_MORL")
+    agent = getattr(module, "deploy_RL", None)
+    if agent is None or getattr(agent, "pareto_catalog", None) is None:
+        return None
+    return agent
+
+
+@app.route("/pareto-front", methods=["GET"])
+def pareto_front():
+    with _sim_lock:
+        agent = _pareto_agent()
+        if agent is None:
+            return jsonify({"error": "Start the demo RL batch scenario to select a checkpoint."}), 409
+        return jsonify(agent.front_payload())
+
+
+@app.route("/policy", methods=["POST"])
+def select_policy():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or type(data.get("policy_id")) is not int:
+        return jsonify({"error": "policy_id must be an integer"}), 400
+    with _sim_lock:
+        agent = _pareto_agent()
+        if agent is None:
+            return jsonify({"error": "Start the demo RL batch scenario to select a checkpoint."}), 409
+        try:
+            agent.select_policy(data["policy_id"])
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+        except Exception:
+            app.logger.exception("Unable to load ATM checkpoint")
+            return jsonify({"error": "Checkpoint could not be loaded; previous policy remains active."}), 503
+        return jsonify({"selected_policy_id": agent.selected_policy_id})
+
+
 @app.route("/state", methods=["GET"])
 def state():
     """Debug helper -- InteractiveAI does not call this; use it to sanity-check
@@ -709,12 +749,12 @@ def main():
                          help="InteractiveAI frontend base URL, trailing slash required")
     parser.add_argument("--cab-user", default="atm_user")
     parser.add_argument("--cab-password", default="test")
-    parser.add_argument("--plugin", default="deployRL_batch",
+    parser.add_argument("--plugin", default="deployRL_batch_MORL",
                          help="Plugin to load (matches plugin_name in "
-                              "ai4realnet_deploy_RL_batch.py's init_plugin()). "
+                              "ai4realnet_deploy_RL_batch_MORL.py's init_plugin()). "
                               "Pass 'None' (case-insensitive) or an empty string to skip "
                               "loading a plugin and load --scenario with plain IC instead ")
-    parser.add_argument("--scenario", default="ai4realnet_deploy_RL_batch/ai4realnet_deploy_RL_batch.scn",
+    parser.add_argument("--scenario", default="ai4realnet_deploy_RL_MORL/ai4realnet_deploy_RL_MORL_single_scn.scn",
                          help="Path passed to DETACHED_BATCH (or IC if --plugin is None), relative to settings.cfg's "
                               "scenario_path ('scenario/')")
     parser.add_argument("--push-interval", type=float, default=PUSH_INTERVAL_S,
